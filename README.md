@@ -1,117 +1,230 @@
-# Mercurius
+# Mercurius 🟤
 
-Biblioteca leve para gerar endpoints CRUD (FastAPI) a partir de modelos SQLAlchemy.
+Biblioteca leve para gerar **endpoints CRUD** automáticos para **FastAPI** a partir de modelos **SQLAlchemy**.
 
-![CI](https://github.com/Kalimbinha/Mercurius/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Kalimbinha/Mercurius/actions/workflows/ci.yml/badge.svg)  
 
-## O que é
+---
 
-`Mercurius` gera endpoints CRUD automaticamente a partir de um modelo SQLAlchemy e schemas Pydantic.
+## 🔹 O que é
 
-Principais features:
-- Geração automática de rotas: list, get, create, update, delete
-- Suporte a schemas separados (read/create/update)
-- Paginação (skip/limit), filtragem simples (`filters` como `field:value`) e ordenação (sort_by, sort_dir)
-- Injeção de dependências por operação (ex.: autenticação por rota)
+`Mercurius` cria rotas REST automaticamente (`list`, `get`, `create`, `update`, `delete`) a partir de:
 
-## Exemplo mínimo
+- Modelos **SQLAlchemy**
+- Schemas **Pydantic**
+
+Ele é ideal para:
+- Prototipagem rápida de recursos CRUD  
+- Aplicações internas e dashboards  
+- Padrão consistente de endpoints em projetos FastAPI + SQLAlchemy  
+
+---
+
+## ✨ Principais features
+
+- Geração automática de rotas CRUD  
+- Suporte a **schemas separados**: read / create / update  
+- Paginação (`skip`/`limit`), filtros (`filters=field:value`) e ordenação (`sort_by`/`sort_dir`)  
+- Injeção de dependências por operação (ex.: autenticação apenas em `create`)  
+- Whitelist de campos para filtros e ordenação  
+- Compatível com **Pydantic v1 e v2**
+
+---
+
+## ⚙️ Registro principal
 
 ```python
+from mercurius import Mercurius
+
+Mercurius(app, model, read_schema, db_session_dep, *,
+           create_schema=None, update_schema=None,
+           prefix=None, pk_name='id',
+```
+Biblioteca leve para gerar endpoints CRUD automáticos para FastAPI a partir de modelos SQLAlchemy.
+
+---
+
+## 🔹 O que é
+
+`Mercurius` cria rotas REST automaticamente: `list`, `get`, `create`, `update` e `delete`, a partir de:
+
+- Modelos SQLAlchemy (ORM mapped)
+- Schemas Pydantic (compatível v1 e v2)
+
+Indicado para prototipagem rápida, aplicações internas, dashboards e para padronizar endpoints em projetos FastAPI + SQLAlchemy.
+
+---
+
+## ✨ Principais features
+
+- Geração automática de rotas CRUD
+- Suporte a schemas separados: read / create / update
+- Paginação (`skip` / `limit`), filtros (`filters=field:value`) e ordenação (`sort_by` / `sort_dir`)
+- Injeção de dependências por operação (ex.: autenticação apenas em `create`)
+- Whitelist de campos permitidos para filtros e ordenação
+- Compatível com Pydantic v1 e v2
+
+---
+
+## ⚙️ Uso básico
+
+Importante: o construtor principal é:
+
+```py
+from mercurius import Mercurius
+
+Mercurius(app, model, read_schema, db_session_dep,
+           create_schema=None, update_schema=None,
+         prefix=None, pk_name='id',
+           operations=('list','get','create','update','delete'),
+           tags=None, operation_dependencies=None,
+           filter_fields=None, sort_fields=None)
+```
+
+Parâmetros comuns
+
+| Parâmetro | Descrição |
+|---|---|
+| app | Instância de FastAPI ou APIRouter |
+| model | Classe SQLAlchemy mapeada |
+| read_schema | Pydantic schema usado para leitura/serialização |
+| db_session_dep | Dependência FastAPI que retorna uma sessão SQLAlchemy |
+| create_schema / update_schema | Schemas opcionais para validação de payloads |
+| operation_dependencies | Dict com dependências por operação (list,get,create,update,delete) |
+| filter_fields / sort_fields | Listas com campos permitidos para filtros/ordenação |
+
+Query params suportados (rota `list`)
+
+- `skip` — int (offset)
+- `limit` — int (tamanho da página)
+- `sort_by` — nome do campo
+- `sort_dir` — `asc` ou `desc`
+- `filters` — múltiplos parâmetros no formato `filters=field:value` (ex.: `?filters=name:john&filters=age:30`)
+
+---
+
+## 📝 Exemplo mínimo
+
+```py
 from fastapi import FastAPI
 from mercurius import Mercurius
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import declarative_base
+from pydantic import BaseModel
+
+Base = declarative_base()
+
+class Item(Base):
+    __tablename__ = 'items'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    value = Column(Integer, default=0)
+
+class ItemRead(BaseModel):
+    id: int
+    name: str
+    value: int
+
+class ItemCreate(BaseModel):
+    name: str
+    value: int = 0
+
+def get_db():
+    ...
 
 app = FastAPI()
 
-# supondo: Model (SQLAlchemy), ItemRead (Pydantic), get_db dependency
-Mercurius(app, Model, ItemRead, get_db, create_schema=ItemCreate, update_schema=ItemUpdate)
-```
-
-Protegendo apenas a criação com uma dependência de autenticação:
-
-```python
-def require_auth(user=Depends(get_current_user)):
-	return user
-
 Mercurius(
-	app,
-	Model,
-	ItemRead,
-	get_db,
-	create_schema=ItemCreate,
-	operation_dependencies={"create": [require_auth]}
+    app,
+    Item,
+    ItemRead,
+    get_db,
+    create_schema=ItemCreate,
+    filter_fields=['name', 'value'],
+    sort_fields=['value'],
 )
 ```
 
-## Query params suportados na listagem
+Rotas criadas automaticamente
 
-- skip: int (offset)
-- limit: int
-- sort_by: nome do campo
-- sort_dir: `asc` ou `desc`
-- filters: múltiplos parâmetros `filters=field:value` (por exemplo `?filters=name:john&filters=age:30`)
+| Método | Endpoint | Operação |
+|---:|:---|:---|
+| GET | /items | list |
+| GET | /items/{id} | get |
+| POST | /items | create |
+| PUT | /items/{id} | update |
+| DELETE | /items/{id} | delete |
 
-## Testes locais
+---
 
-Rode os testes com:
+## 🔒 Protegendo rotas por operação
+
+Você pode passar dependências por operação:
+
+```py
+from fastapi import Depends
+
+def require_auth(...):
+    ...
+
+Mercurius(
+    app,
+    Item,
+    ItemRead,
+    get_db,
+    create_schema=ItemCreate,
+    operation_dependencies={'create': [Depends(require_auth)]}
+)
+```
+
+---
+
+## 🚀 Instalação (desenvolvimento)
+
+No PowerShell:
 
 ```powershell
-python -m venv .venv; .\.venv\Scripts\Activate.ps1
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -e .
+```
+
+## 🎯 Executando o exemplo
+
+No PowerShell:
+
+```powershell
+uvicorn examples.main:app --reload
+```
+
+## ✅ Testes
+
+Instale as dependências para teste e execute:
+
+```powershell
 python -m pip install pytest httpx
 pytest -q
 ```
 
-## CI/CD (GitHub Actions)
+## 📂 Estrutura do repositório
 
-Adicionei dois workflows em `.github/workflows/`:
-
-- `ci.yml` — roda testes em push/PR (Python 3.10/3.11/3.12)
-- `publish.yml` — constrói e publica no PyPI quando você pushar uma tag `vX.Y.Z`
-
-### Notas sobre segurança de filtros
-
-O `Mercurius` agora suporta whitelists para campos utilizados em filtros e ordenação, evitando exposição acidental de atributos do modelo. Para ativar, passe `filter_fields` e/ou `sort_fields` ao registrar:
-
-```python
-Mercurius(
-	app,
-	Model,
-	ItemRead,
-	get_db,
-	create_schema=ItemCreate,
-	filter_fields=["name", "value"],
-	sort_fields=["value"],
-)
+```
+mercurius/
+├─ mercurius/         # pacote principal
+├─ examples/main.py    # exemplo de uso
+├─ tests/test_crud.py  # testes unitários
+├─ pyproject.toml / setup.py
+└─ README.md
 ```
 
-Para publicar automaticamente no PyPI, crie um token de API no PyPI e adicione-o nos _Secrets_ do repositório GitHub:
 
-1. No PyPI: https://pypi.org/manage/account/token/ — crie um token com o escopo desejado.
-2. No GitHub: Settings -> Secrets -> Actions -> New repository secret
-   - Name: `PYPI_API_TOKEN`
-   - Value: o token do PyPI
+## 🌟 Recursos avançados
 
-Quando quiser publicar, crie uma tag semântica e faça push:
-
-```powershell
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-O workflow `publish.yml` será acionado e fará upload dos artefatos para o PyPI usando o token.
-
-## Observações e boas práticas
-
-- Recomendo configurar um `LICENSE` (por exemplo MIT) antes de publicar.
-- Considere habilitar branch protection na `main` e exigir CI verde antes do merge.
-- Para segurança, nunca coloque tokens no código — use os _Secrets_ do GitHub.
-
-## Estado atual
-
-- O pacote já foi estruturado no layout `src/mercurius` e pode ser instalado localmente via `pip install -e .`.
-- Há um exemplo em `examples/main.py` e testes em `tests/test_crud.py`.
+- Whitelist de campos para filtros e ordenação
+- Paginação automática
+- Dependências por operação (autenticação, roles, etc.)
+- Compatível com Pydantic v1 / v2
 
 ---
 
-Se quiser eu configuro também o `LICENSE` (MIT) e um workflow de CI que rode lint/mypy/coverage. Diga quais extras prefere.
