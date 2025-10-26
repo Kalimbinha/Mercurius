@@ -17,6 +17,8 @@ def Mercurius(
     operations: Sequence[str] = ("list", "get", "create", "update", "delete"),
     tags: Optional[List[str]] = None,
     operation_dependencies: Optional[dict] = None,
+    filter_fields: Optional[Sequence[str]] = None,
+    sort_fields: Optional[Sequence[str]] = None,
 ):
     """
     Cria automaticamente rotas CRUD para o modelo SQLAlchemy informado.
@@ -63,6 +65,9 @@ def Mercurius(
                 if ":" not in f:
                     continue
                 field, val = f.split(":", 1)
+                # enforce whitelist if provided
+                if filter_fields is not None and field not in filter_fields:
+                    continue
                 if hasattr(model, field):
                     col = getattr(model, field)
                     if isinstance(val, str) and val.isdigit():
@@ -74,7 +79,8 @@ def Mercurius(
                             val_cast = val
                     q = q.filter(col == val_cast)
 
-            if sort_by and hasattr(model, sort_by):
+            # enforce whitelist for sort fields if provided
+            if sort_by and (sort_fields is None or sort_by in sort_fields) and hasattr(model, sort_by):
                 col = getattr(model, sort_by)
                 if str(sort_dir).lower() == "desc":
                     q = q.order_by(col.desc())
