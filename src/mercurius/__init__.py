@@ -65,7 +65,6 @@ def Mercurius(
                 if ":" not in f:
                     continue
                 field, val = f.split(":", 1)
-                # enforce whitelist if provided
                 if filter_fields is not None and field not in filter_fields:
                     continue
                 if hasattr(model, field):
@@ -79,7 +78,6 @@ def Mercurius(
                             val_cast = val
                     q = q.filter(col == val_cast)
 
-            # enforce whitelist for sort fields if provided
             if sort_by and (sort_fields is None or sort_by in sort_fields) and hasattr(model, sort_by):
                 col = getattr(model, sort_by)
                 if str(sort_dir).lower() == "desc":
@@ -92,8 +90,7 @@ def Mercurius(
 
     if "get" in operations:
         deps = _deps_for("get")
-
-        @router.get(f"/{{item_id}}", response_model=read_schema, tags=tags, dependencies=deps)
+        @router.get("/{item_id}", response_model=read_schema, tags=tags, dependencies=deps)
         def get_item(item_id: int, db: Session = Depends(db_session)):
             item = db.query(model).filter(pk_attr == item_id).first()
             if not item:
@@ -127,7 +124,7 @@ def Mercurius(
         in_update = update_schema or read_schema
         deps = _deps_for("update")
 
-        @router.put(f"/{{item_id}}", response_model=read_schema, tags=tags, dependencies=deps)
+        @router.put("/{item_id}", response_model=read_schema, tags=tags, dependencies=deps)
         def update_item(item_id: int, payload, db: Session = Depends(db_session)):
             existing = db.query(model).filter(pk_attr == item_id).first()
             if not existing:
@@ -155,7 +152,7 @@ def Mercurius(
     if "delete" in operations:
         deps = _deps_for("delete")
 
-        @router.delete(f"/{{item_id}}", status_code=status.HTTP_204_NO_CONTENT, tags=tags, dependencies=deps)
+        @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT, tags=tags, dependencies=deps)
         def delete_item(item_id: int, db: Session = Depends(db_session)):
             existing = db.query(model).filter(pk_attr == item_id).first()
             if not existing:

@@ -1,14 +1,14 @@
-import sys
 import os
-import pytest
-from fastapi import FastAPI, Depends, HTTPException
-from typing import Optional
-from fastapi.testclient import TestClient
-from pydantic import BaseModel
+import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
+
+from fastapi import FastAPI, HTTPException
+from typing import Optional
+from fastapi.testclient import TestClient
+from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.ext.declarative import declarative_base

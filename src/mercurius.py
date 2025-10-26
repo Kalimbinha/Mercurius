@@ -96,7 +96,7 @@ def Mercurius(
     if "get" in operations:
         deps = _deps_for("get")
 
-        @router.get(f"/{{item_id}}", response_model=read_schema, tags=tags, dependencies=deps)
+        @router.get("/{item_id}", response_model=read_schema, tags=tags, dependencies=deps)
         def get_item(item_id: int, db: Session = Depends(db_session)):
             item = db.query(model).filter(pk_attr == item_id).first()
             if not item:
@@ -129,8 +129,7 @@ def Mercurius(
     if "update" in operations:
         in_update = update_schema or read_schema
         deps = _deps_for("update")
-
-        @router.put(f"/{{item_id}}", response_model=read_schema, tags=tags, dependencies=deps)
+        @router.put("/{item_id}", response_model=read_schema, tags=tags, dependencies=deps)
         def update_item(item_id: int, payload, db: Session = Depends(db_session)):
             existing = db.query(model).filter(pk_attr == item_id).first()
             if not existing:
@@ -157,8 +156,7 @@ def Mercurius(
 
     if "delete" in operations:
         deps = _deps_for("delete")
-
-        @router.delete(f"/{{item_id}}", status_code=status.HTTP_204_NO_CONTENT, tags=tags, dependencies=deps)
+        @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT, tags=tags, dependencies=deps)
         def delete_item(item_id: int, db: Session = Depends(db_session)):
             existing = db.query(model).filter(pk_attr == item_id).first()
             if not existing:

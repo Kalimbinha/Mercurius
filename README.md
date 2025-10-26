@@ -4,7 +4,6 @@ Biblioteca leve para gerar **endpoints CRUD** automáticos para **FastAPI** a pa
 
 ![CI](https://github.com/Kalimbinha/Mercurius/actions/workflows/ci.yml/badge.svg)  
 
----
 
 ## 🔹 O que é
 
@@ -18,7 +17,6 @@ Ele é ideal para:
 - Aplicações internas e dashboards  
 - Padrão consistente de endpoints em projetos FastAPI + SQLAlchemy  
 
----
 
 ## ✨ Principais features
 
@@ -29,7 +27,6 @@ Ele é ideal para:
 - Whitelist de campos para filtros e ordenação  
 - Compatível com **Pydantic v1 e v2**
 
----
 
 ## ⚙️ Registro principal
 
@@ -42,7 +39,6 @@ Mercurius(app, model, read_schema, db_session_dep, *,
 ```
 Biblioteca leve para gerar endpoints CRUD automáticos para FastAPI a partir de modelos SQLAlchemy.
 
----
 
 ## 🔹 O que é
 
@@ -53,7 +49,6 @@ Biblioteca leve para gerar endpoints CRUD automáticos para FastAPI a partir de 
 
 Indicado para prototipagem rápida, aplicações internas, dashboards e para padronizar endpoints em projetos FastAPI + SQLAlchemy.
 
----
 
 ## ✨ Principais features
 
@@ -64,7 +59,6 @@ Indicado para prototipagem rápida, aplicações internas, dashboards e para pad
 - Whitelist de campos permitidos para filtros e ordenação
 - Compatível com Pydantic v1 e v2
 
----
 
 ## ⚙️ Uso básico
 
@@ -84,7 +78,7 @@ Mercurius(app, model, read_schema, db_session_dep,
 Parâmetros comuns
 
 | Parâmetro | Descrição |
-|---|---|
+|
 | app | Instância de FastAPI ou APIRouter |
 | model | Classe SQLAlchemy mapeada |
 | read_schema | Pydantic schema usado para leitura/serialização |
@@ -101,7 +95,6 @@ Query params suportados (rota `list`)
 - `sort_dir` — `asc` ou `desc`
 - `filters` — múltiplos parâmetros no formato `filters=field:value` (ex.: `?filters=name:john&filters=age:30`)
 
----
 
 ## 📝 Exemplo mínimo
 
@@ -148,14 +141,13 @@ Mercurius(
 Rotas criadas automaticamente
 
 | Método | Endpoint | Operação |
-|---:|:---|:---|
+:|||
 | GET | /items | list |
 | GET | /items/{id} | get |
 | POST | /items | create |
 | PUT | /items/{id} | update |
 | DELETE | /items/{id} | delete |
 
----
 
 ## 🔒 Protegendo rotas por operação
 
@@ -177,7 +169,6 @@ Mercurius(
 )
 ```
 
----
 
 ## 🚀 Instalação (desenvolvimento)
 
@@ -226,5 +217,4 @@ mercurius/
 - Dependências por operação (autenticação, roles, etc.)
 - Compatível com Pydantic v1 / v2
 
----
 
