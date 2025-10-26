@@ -5,12 +5,11 @@ from fastapi import FastAPI, HTTPException
 from typing import Optional
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
+from typing import Any
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.pool import StaticPool
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
-
-# import mercurius dynamically inside create_app to avoid modifying sys.path at module level
 
 ENGINE = create_engine(
     "sqlite:///:memory:",
@@ -18,7 +17,7 @@ ENGINE = create_engine(
     poolclass=StaticPool,
 )
 SessionLocal = sessionmaker(bind=ENGINE)
-Base = declarative_base()
+Base: Any = declarative_base()
 
 
 class Item(Base):
@@ -63,7 +62,6 @@ def create_app(operation_deps=None):
     try:
         from mercurius import Mercurius
     except Exception:
-        # fallback: add project root to sys.path and retry
         ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         if ROOT not in sys.path:
             sys.path.insert(0, ROOT)

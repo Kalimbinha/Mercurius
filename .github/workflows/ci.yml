@@ -27,7 +27,6 @@ jobs:
           ruff check .
       - name: Type check (mypy)
         run: |
-          # allow missing imports in third-party libraries for now
           mypy --ignore-missing-imports . || true
       - name: Run tests with coverage
         run: |

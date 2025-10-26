@@ -1,4 +1,5 @@
-from typing import Type, List, Optional, Sequence, Callable
+from typing import Type, List, Optional, Sequence, Callable, Union, Any, cast
+from enum import Enum
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, HTTPException, Depends, status, Query
 from pydantic import BaseModel
@@ -15,7 +16,7 @@ def Mercurius(
     prefix: Optional[str] = None,
     pk_name: str = "id",
     operations: Sequence[str] = ("list", "get", "create", "update", "delete"),
-    tags: Optional[List[str]] = None,
+    tags: Optional[List[Union[str, Enum]]] = None,
     operation_dependencies: Optional[dict] = None,
 ):
     """
@@ -36,7 +37,7 @@ def Mercurius(
 
     router = APIRouter()
     prefix = prefix or getattr(model, "__tablename__", model.__name__.lower())
-    tags = tags or [prefix]
+    tags = cast(Optional[List[Union[str, Enum]]], tags or [cast(Any, prefix)])
 
     pk_attr = getattr(model, pk_name)
 
@@ -57,7 +58,7 @@ def Mercurius(
     if "list" in operations:
         deps = _deps_for("list")
 
-        @router.get("/", response_model=List[read_schema], tags=tags, dependencies=deps)
+        @router.get("/", response_model=cast(Any, List[read_schema]), tags=cast(Any, tags), dependencies=deps)  
         def list_items(
             skip: int = 0,
             limit: int = 100,
@@ -74,6 +75,7 @@ def Mercurius(
                 field, val = f.split(":", 1)
                 if hasattr(model, field):
                     col = getattr(model, field)
+                     val_cast: Any
                     if isinstance(val, str) and val.isdigit():
                         val_cast = int(val)
                     else:
@@ -96,7 +98,7 @@ def Mercurius(
     if "get" in operations:
         deps = _deps_for("get")
 
-        @router.get("/{item_id}", response_model=read_schema, tags=tags, dependencies=deps)
+        @router.get("/{item_id}", response_model=cast(Any, read_schema), tags=cast(Any, tags), dependencies=deps)  
         def get_item(item_id: int, db: Session = Depends(db_session)):
             item = db.query(model).filter(pk_attr == item_id).first()
             if not item:
@@ -107,7 +109,7 @@ def Mercurius(
         in_schema = create_schema or read_schema
         deps = _deps_for("create")
 
-        @router.post("/", response_model=read_schema, status_code=status.HTTP_201_CREATED, tags=tags, dependencies=deps)
+        @router.post("/", response_model=cast(Any, read_schema), status_code=status.HTTP_201_CREATED, tags=cast(Any, tags), dependencies=deps)  
         def create_item(payload, db: Session = Depends(db_session)):
             obj = model(**_payload_to_dict(payload))
             try:
@@ -129,7 +131,8 @@ def Mercurius(
     if "update" in operations:
         in_update = update_schema or read_schema
         deps = _deps_for("update")
-        @router.put("/{item_id}", response_model=read_schema, tags=tags, dependencies=deps)
+
+        @router.put("/{item_id}", response_model=cast(Any, read_schema), tags=cast(Any, tags), dependencies=deps)  
         def update_item(item_id: int, payload, db: Session = Depends(db_session)):
             existing = db.query(model).filter(pk_attr == item_id).first()
             if not existing:
@@ -156,7 +159,8 @@ def Mercurius(
 
     if "delete" in operations:
         deps = _deps_for("delete")
-        @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT, tags=tags, dependencies=deps)
+
+        @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT, tags=cast(Any, tags), dependencies=deps)  
         def delete_item(item_id: int, db: Session = Depends(db_session)):
             existing = db.query(model).filter(pk_attr == item_id).first()
             if not existing:
