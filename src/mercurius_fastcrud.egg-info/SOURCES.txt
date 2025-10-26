@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+src/mercurius/__init__.py
+src/mercurius_fastcrud.egg-info/PKG-INFO
+src/mercurius_fastcrud.egg-info/SOURCES.txt
+src/mercurius_fastcrud.egg-info/dependency_links.txt
+src/mercurius_fastcrud.egg-info/requires.txt
+src/mercurius_fastcrud.egg-info/top_level.txt
+tests/test_crud.py

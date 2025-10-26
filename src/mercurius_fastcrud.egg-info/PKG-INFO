@@ -1,3 +1,15 @@
+Metadata-Version: 2.4
+Name: mercurius-fastcrud
+Version: 0.1.0
+Summary: FastCRUD helper to auto-generate FastAPI CRUD routes from SQLAlchemy models
+Author-email: Your Name <you@example.com>
+License: MIT
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi
+Requires-Dist: sqlalchemy
+Requires-Dist: pydantic
+
 # Mercurius
 
 Esta pasta contém utilitários para acelerar desenvolvimento com FastAPI + SQLAlchemy.

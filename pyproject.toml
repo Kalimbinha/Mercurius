@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mercurius-fastcrud"
+version = "0.1.0"
+description = "FastCRUD helper to auto-generate FastAPI CRUD routes from SQLAlchemy models"
+readme = "README.md"
+authors = [ { name = "Your Name", email = "you@example.com" } ]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = ["fastapi", "sqlalchemy", "pydantic"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
